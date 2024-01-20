@@ -7,10 +7,12 @@ import net.fameless.allitems.game.StatsCommand;
 import net.fameless.allitems.manager.ItemManager;
 import net.fameless.allitems.timer.Timer;
 import net.fameless.allitems.timer.TimerTabCompleter;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
+import java.time.Duration;
 
 public final class AllItems extends JavaPlugin {
 
@@ -48,6 +50,11 @@ public final class AllItems extends JavaPlugin {
         getCommand("stats").setExecutor(statsCommand);
 
         getCommand("timer").setTabCompleter(new TimerTabCompleter());
+
+        UpdateChecker checker = new UpdateChecker(114608, Duration.ofHours(2));
+        checker.checkForUpdates();
+
+        new Metrics(this, 20782);
 
         Bukkit.getLogger().info("[All Items] Successfully started.");
         Bukkit.getLogger().info("[All Items] Thanks for using my plugin.");
