@@ -1,2 +1,4 @@
 ignore:
   time: 0
+  gradient_enabled: true
+  gradient_speed: 3

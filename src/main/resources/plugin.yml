@@ -1,5 +1,5 @@
 name: AllItems
-version: '1.0.0'
+version: '1.0.1'
 main: net.fameless.allitems.AllItems
 api-version: '1.20'
 author: Fameless9

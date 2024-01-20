@@ -39,7 +39,12 @@ public final class AllItems extends JavaPlugin {
         }
         ItemManager.loadToList();
 
-        timer = new Timer(false, getConfig().getInt("ignore.time"));
+        int time = getConfig().get("ignore.time") != null ? getConfig().getInt("ignore.time") : 0;
+        boolean gradientEnabled = getConfig().get("ignore.gradient_enabled") == null || getConfig().getBoolean("ignore.gradient_enabled");
+        int gradientSpeed = getConfig().get("ignore.gradient_speed") != null ? getConfig().getInt("ignore.gradient_speed") : 3;
+
+        timer = new Timer(false, time, gradientEnabled, gradientSpeed);
+
         StatsCommand statsCommand = new StatsCommand();
 
         Bukkit.getPluginManager().registerEvents(new GameListener(), this);

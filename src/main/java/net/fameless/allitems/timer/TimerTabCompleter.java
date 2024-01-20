@@ -14,7 +14,7 @@ public class TimerTabCompleter implements TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 1) {
-            String[] array = new String[]{"toggle", "set"};
+            String[] array = new String[]{"toggle", "set", "gradient", "gradientspeed"};
             return StringUtil.copyPartialMatches(args[0], Arrays.asList(array), new ArrayList<>());
         }
         return null;
