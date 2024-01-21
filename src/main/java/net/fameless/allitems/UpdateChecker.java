@@ -9,7 +9,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.logging.Level;
 
 public class UpdateChecker {
     private final int resourceId;
@@ -41,7 +40,7 @@ public class UpdateChecker {
                 }
                 lastCheckTime = currentTime;
             } catch (IOException e) {
-                AllItems.getInstance().getLogger().log(Level.WARNING, "Failed to check for updates: " + e.getMessage(), e);
+                Bukkit.getLogger().warning("Failed to check for updates: " + e.getMessage());
             }
         });
     }

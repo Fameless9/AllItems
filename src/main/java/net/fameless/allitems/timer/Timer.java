@@ -1,6 +1,7 @@
 package net.fameless.allitems.timer;
 
 import net.fameless.allitems.AllItems;
+import net.fameless.allitems.util.Format;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -26,6 +27,10 @@ public class Timer implements CommandExecutor {
 
     private boolean running;
     private int time;
+    private int progress = 1;
+    private boolean inverted = false;
+    private int speed;
+    private boolean isGradientEnabled;
 
     public boolean isRunning() {
         return running;
@@ -43,10 +48,21 @@ public class Timer implements CommandExecutor {
         this.time = time;
     }
 
-    private int progress = 1;
-    private boolean inverted = false;
-    private int speed;
-    private boolean isGradientEnabled;
+    public int getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(int speed) {
+        this.speed = speed;
+    }
+
+    public boolean isGradientEnabled() {
+        return isGradientEnabled;
+    }
+
+    public void setGradientEnabled(boolean gradientEnabled) {
+        isGradientEnabled = gradientEnabled;
+    }
 
     public void run() {
         new BukkitRunnable() {
@@ -97,44 +113,18 @@ public class Timer implements CommandExecutor {
                 if (isGradientEnabled) {
                     Component parsed;
                     if (inverted) {
-                        parsed = serializer.deserialize("<bold><gradient:#8a4fff:blue:" + (double) progress / 100 + ">" + toFormatted(getTime()) + "</gradient>");
+                        parsed = serializer.deserialize("<bold><gradient:#8a4fff:blue:" + (double) progress / 100 + ">" + Format.formatTime(getTime()) + "</gradient>");
                     } else {
-                        parsed = serializer.deserialize("<bold><gradient:blue:#8a4fff:" + (double) progress / 100 + ">" + toFormatted(getTime()) + "</gradient>");
+                        parsed = serializer.deserialize("<bold><gradient:blue:#8a4fff:" + (double) progress / 100 + ">" + Format.formatTime(getTime()) + "</gradient>");
                     }
                     audience.sendActionBar(parsed);
                     return;
                 }
-                p.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ChatColor.BLUE.toString() + ChatColor.BOLD + toFormatted(getTime())));
+                p.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ChatColor.BLUE.toString() + ChatColor.BOLD + Format.formatTime(getTime())));
             }
         }
     }
 
-
-    private String toFormatted(int time) {
-        int days = time / 86400;
-        int hours = time / 3600 % 24;
-        int minutes = time / 60 % 60;
-        int seconds = time % 60;
-
-        StringBuilder message = new StringBuilder();
-
-        if (days >= 1) {
-            message.append(days).append("d ");
-        }
-        if (hours >= 1) {
-            message.append(hours).append("h ");
-        }
-        if (minutes >= 1) {
-            message.append(minutes).append("m ");
-        }
-        if (seconds >= 1) {
-            message.append(seconds).append("s ");
-        }
-        if (time == 0) {
-            message.append("0s");
-        }
-        return String.valueOf(message);
-    }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -142,20 +132,14 @@ public class Timer implements CommandExecutor {
             sender.sendMessage(ChatColor.GRAY + "Usage: /timer <toggle|set|gradientspeed|gradient> <time|speed>.");
             return false;
         }
+        if (!sender.hasPermission("allitems.timer")) {
+            sender.sendMessage(ChatColor.RED + "Lacking permission: 'allitems.timer'");
+            return false;
+        }
 
         switch (args[0]) {
             case "toggle": {
-                if (isRunning()) {
-                    setRunning(false);
-                    for (Player player : Bukkit.getOnlinePlayers()) {
-                        player.sendTitle(ChatColor.BLUE + "Timer paused.", "", 10, 40, 10);
-                    }
-                } else {
-                    setRunning(true);
-                    for (Player player : Bukkit.getOnlinePlayers()) {
-                        player.sendTitle(ChatColor.BLUE + "Timer started.", "", 10, 40, 10);
-                    }
-                }
+                toggle();
                 break;
             }
             case "set": {
@@ -197,16 +181,7 @@ public class Timer implements CommandExecutor {
                 break;
             }
             case "gradient": {
-                isGradientEnabled = !isGradientEnabled;
-                if (isGradientEnabled) {
-                    Bukkit.broadcastMessage(ChatColor.BLUE + "Gradient has been toggled on.");
-                    AllItems.getInstance().getConfig().set("ignore.gradient_enabled", true);
-                    AllItems.getInstance().saveConfig();
-                    return false;
-                }
-                Bukkit.broadcastMessage(ChatColor.BLUE + "Gradient has been toggled off.");
-                AllItems.getInstance().getConfig().set("ignore.gradient_enabled", false);
-                AllItems.getInstance().saveConfig();
+                toggleGradient();
                 break;
             }
             default: {
@@ -215,5 +190,32 @@ public class Timer implements CommandExecutor {
         }
 
         return false;
+    }
+
+    public void toggle() {
+        if (isRunning()) {
+            setRunning(false);
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                player.sendTitle(ChatColor.BLUE + "Timer paused.", "", 10, 40, 10);
+            }
+        } else {
+            setRunning(true);
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                player.sendTitle(ChatColor.BLUE + "Timer started.", "", 10, 40, 10);
+            }
+        }
+    }
+
+    public void toggleGradient() {
+        isGradientEnabled = !isGradientEnabled;
+        if (isGradientEnabled) {
+            Bukkit.broadcastMessage(ChatColor.BLUE + "Gradient has been toggled on.");
+            AllItems.getInstance().getConfig().set("ignore.gradient_enabled", true);
+            AllItems.getInstance().saveConfig();
+            return;
+        }
+        Bukkit.broadcastMessage(ChatColor.BLUE + "Gradient has been toggled off.");
+        AllItems.getInstance().getConfig().set("ignore.gradient_enabled", false);
+        AllItems.getInstance().saveConfig();
     }
 }

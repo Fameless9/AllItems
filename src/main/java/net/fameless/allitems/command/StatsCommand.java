@@ -1,8 +1,10 @@
-package net.fameless.allitems.game;
+package net.fameless.allitems.command;
 
 import com.google.gson.JsonPrimitive;
 import net.fameless.allitems.AllItems;
-import net.fameless.allitems.manager.BossbarManager;
+import net.fameless.allitems.game.ItemFile;
+import net.fameless.allitems.util.Format;
+import net.fameless.allitems.util.ItemBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -14,12 +16,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -85,6 +85,7 @@ public class StatsCommand implements CommandExecutor, Listener {
             for (ItemStack itemStack : PageUtil.getPageItems(finishedItems, page, 52)) {
                 gui.addItem(itemStack);
             }
+            player.closeInventory();
             player.openInventory(gui);
         }
     }
@@ -102,11 +103,11 @@ public class StatsCommand implements CommandExecutor, Listener {
 
                     if (object instanceof Material) {
                         Material material = (Material) object;
-                        newObjectives.add(buildItem(new ItemStack(material),
+                        newObjectives.add(ItemBuilder.buildItem(new ItemStack(material),
                                 ChatColor.GRAY + "Item: " + ChatColor.BLUE +
-                                        BossbarManager.formatItemName(material.name().replace("_", " ")),
-                                        "", ChatColor.DARK_GRAY + "Time: " + (AllItems.getInstance().getConfig().get(
-                                                "ignore." + material.name()) != null ? ChatColor.BLUE + toFormatted(AllItems.getInstance().getConfig().getInt(
+                                        Format.formatItemName(material.name().replace("_", " ")),
+                                        true,"", ChatColor.DARK_GRAY + "Time: " + (AllItems.getInstance().getConfig().get(
+                                                "ignore." + material.name()) != null ? ChatColor.BLUE + Format.formatTime(AllItems.getInstance().getConfig().getInt(
                                                         "ignore." + material.name())) : ChatColor.GRAY + "N/A")));
                     }
                 }
@@ -137,44 +138,5 @@ public class StatsCommand implements CommandExecutor, Listener {
             new GUI((Player) event.getWhoClicked(), page + 1);
         }
         event.setCancelled(true);
-    }
-
-    private static ItemStack buildItem(ItemStack item, String name, String... lore) {
-        ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName(name);
-        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-
-        List<String> lores = new ArrayList<>();
-        Collections.addAll(lores, lore);
-
-        meta.setLore(lores);
-        item.setItemMeta(meta);
-        return item;
-    }
-
-    private static String toFormatted(int time) {
-        int days = time / 86400;
-        int hours = time / 3600 % 24;
-        int minutes = time / 60 % 60;
-        int seconds = time % 60;
-
-        StringBuilder message = new StringBuilder();
-
-        if (days >= 1) {
-            message.append(days).append("d ");
-        }
-        if (hours >= 1) {
-            message.append(hours).append("h ");
-        }
-        if (minutes >= 1) {
-            message.append(minutes).append("m ");
-        }
-        if (seconds >= 1) {
-            message.append(seconds).append("s ");
-        }
-        if (time == 0) {
-            message.append("0s");
-        }
-        return String.valueOf(message);
     }
 }

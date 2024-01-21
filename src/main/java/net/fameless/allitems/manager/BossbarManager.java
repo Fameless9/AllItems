@@ -1,6 +1,7 @@
 package net.fameless.allitems.manager;
 
 import net.fameless.allitems.AllItems;
+import net.fameless.allitems.util.Format;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.boss.BarColor;
@@ -34,21 +35,11 @@ public class BossbarManager {
         } else {
             bossbar = Bukkit.createBossBar(ChatColor.GRAY + "(" + ChatColor.GREEN + ItemManager.getFinishedAmount() +
                             ChatColor.GRAY + "/" + ItemManager.getItemAmount() + ")" + ChatColor.DARK_GRAY + " | " + ChatColor.GRAY + "Item" +
-                            ChatColor.DARK_GRAY + ": " + ChatColor.BLUE + formatItemName(ItemManager.getCurrentItem().name().replace("_", " ")) +
+                            ChatColor.DARK_GRAY + ": " + ChatColor.BLUE + Format.formatItemName(ItemManager.getCurrentItem().name().replace("_", " ")) +
                             ChatColor.GRAY + " » " + ChatColor.BLUE + ItemManager.getNextItem(),
                     BarColor.PURPLE, BarStyle.SOLID);
         }
         bossbar.addPlayer(player);
         bossBarHashMap.put(player, bossbar);
-    }
-
-    public static String formatItemName(String input) {
-        String[] words = input.split(" ");
-        StringBuilder formatted = new StringBuilder();
-        for (String word : words) {
-            String formattedWord = word.substring(0, 1).toUpperCase() + word.substring(1).toLowerCase();
-            formatted.append(formattedWord).append(" ");
-        }
-        return formatted.toString().trim();
     }
 }

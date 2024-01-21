@@ -3,6 +3,7 @@ package net.fameless.allitems.manager;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import net.fameless.allitems.game.ItemFile;
+import net.fameless.allitems.util.Format;
 import org.bukkit.Material;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ public class ItemManager {
 
     public static void loadToList() {
         for (Map.Entry entry : ItemFile.getItemObject().entrySet()) {
-            if (!((JsonPrimitive) entry.getValue()).getAsBoolean()) {
+            if (!((JsonPrimitive) entry.getValue()).getAsBoolean() && Material.valueOf(entry.getKey().toString()) != null) {
                 materials.add(Material.valueOf(entry.getKey().toString()));
             }
         }
@@ -45,7 +46,7 @@ public class ItemManager {
     public static String getNextItem() {
         String nextItem;
         try {
-            nextItem = BossbarManager.formatItemName(materials.get(pos + 1).name().replace("_", " "));
+            nextItem = Format.formatItemName(materials.get(pos + 1).name().replace("_", " "));
         } catch (IndexOutOfBoundsException e) {
             nextItem = "None";
         }

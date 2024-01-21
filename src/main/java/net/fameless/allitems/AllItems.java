@@ -1,9 +1,10 @@
 package net.fameless.allitems;
 
+import net.fameless.allitems.command.SettingsCommand;
+import net.fameless.allitems.command.SkipCommand;
+import net.fameless.allitems.command.StatsCommand;
 import net.fameless.allitems.game.GameListener;
 import net.fameless.allitems.game.ItemFile;
-import net.fameless.allitems.game.SkipCommand;
-import net.fameless.allitems.game.StatsCommand;
 import net.fameless.allitems.manager.ItemManager;
 import net.fameless.allitems.timer.Timer;
 import net.fameless.allitems.timer.TimerTabCompleter;
@@ -44,15 +45,17 @@ public final class AllItems extends JavaPlugin {
         int gradientSpeed = getConfig().get("ignore.gradient_speed") != null ? getConfig().getInt("ignore.gradient_speed") : 3;
 
         timer = new Timer(false, time, gradientEnabled, gradientSpeed);
-
         StatsCommand statsCommand = new StatsCommand();
+        SettingsCommand settingsCommand = new SettingsCommand();
 
         Bukkit.getPluginManager().registerEvents(new GameListener(), this);
+        Bukkit.getPluginManager().registerEvents(settingsCommand, this);
         Bukkit.getPluginManager().registerEvents(statsCommand, this);
 
         getCommand("skip").setExecutor(new SkipCommand());
         getCommand("timer").setExecutor(timer);
         getCommand("stats").setExecutor(statsCommand);
+        getCommand("settings").setExecutor(settingsCommand);
 
         getCommand("timer").setTabCompleter(new TimerTabCompleter());
 
@@ -63,10 +66,6 @@ public final class AllItems extends JavaPlugin {
 
         Bukkit.getLogger().info("[All Items] Successfully started.");
         Bukkit.getLogger().info("[All Items] Thanks for using my plugin.");
-    }
-
-    @Override
-    public void onDisable() {
     }
 
     public static AllItems getInstance() { return instance; }

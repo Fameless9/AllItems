@@ -1,3 +1,55 @@
+# List of valid item names: https://mcutils.com/item-ids --- Use the 1.13+ item ID.
+# If you remove an item from this list, it will be automatically added as not completed the next time you start the server.
+# If you add an item to this list, it will be excluded the next time you start the server.
+exclude:
+  items:
+    - WATER
+    - DECORATED_POT
+    - POWDER_SNOW
+    - CHAIN_COMMAND_BLOCK
+    - WATER_CAULDRON
+    - LAVA_CAULDRON
+    - COMMAND_BLOCK_MINECART
+    - COMMAND_BLOCK
+    - POWDER_SNOW_CAULDRON
+    - REPEATING_COMMAND_BLOCK
+    - BEDROCK
+    - AIR
+    - FIRE
+    - SOUL_FIRE
+    - END_PORTAL_FRAME
+    - NETHER_PORTAL
+    - END_PORTAL
+    - CHAINMAIL_HELMET
+    - CHAINMAIL_LEGGINGS
+    - CHAINMAIL_CHESTPLATE
+    - CHAINMAIL_BOOTS
+    - LIGHT
+    - END_GATEWAY
+    - DRAGON_EGG
+    - TALL_SEAGRASS
+    - VOID_AIR
+    - PISTON_HEAD
+    - MOVING_PISTON
+    - WRITTEN_BOOK
+    - DAMAGED_ANVIL
+    - TORCHFLOWER_SEEDS
+    - JIGSAW
+    - TIPPED_ARROW
+    - LAVA
+    - WATER_CAULDRON
+    - STRUCTURE_VOID
+    - BARRIER
+    - DEBUG_STICK
+    - BUNDLE
+    - FARMLAND
+    - STRUCTURE_BLOCK
+    - BUBBLE_COLUMN
+    - CAVE_AIR
+    - KNOWLEDGE_BOOK
+    - DIRT_PATH
+
+# Please do not touch the ignore section, as it might lead to the plugin malfunctioning.
 ignore:
   time: 0
   gradient_enabled: true

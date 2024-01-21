@@ -3,6 +3,7 @@ package net.fameless.allitems.game;
 import net.fameless.allitems.AllItems;
 import net.fameless.allitems.manager.BossbarManager;
 import net.fameless.allitems.manager.ItemManager;
+import net.fameless.allitems.util.Format;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
@@ -56,7 +57,7 @@ public class GameListener implements Listener {
                     for (ItemStack stack : playerInv.getContents()) {
                         if (stack != null && stack.getType().equals(ItemManager.getCurrentItem())) {
                             Bukkit.broadcastMessage(ChatColor.BLUE + players.getName() + ChatColor.GRAY + " completed " +
-                                    BossbarManager.formatItemName(stack.getType().name().replace("_", " "))
+                                    Format.formatItemName(stack.getType().name().replace("_", " "))
                                     + ChatColor.GRAY + " (" + ChatColor.GREEN + (ItemManager.getFinishedAmount() + 1) + ChatColor.GRAY + "/" +
                                     ItemManager.getItemAmount() + ")");
                             players.playSound(players.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 1, 20);
