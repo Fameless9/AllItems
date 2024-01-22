@@ -1,3 +1,6 @@
+# If false, you won't be able to open the GUIs, but the stats will still be tracked, so you can enable them later
+enable_playerstats: true
+enable_stats: true
 # List of valid item names: https://mcutils.com/item-ids --- Use the 1.13+ item ID.
 # If you remove an item from this list, it will be automatically added as not completed the next time you start the server.
 # If you add an item to this list, it will be excluded the next time you start the server.

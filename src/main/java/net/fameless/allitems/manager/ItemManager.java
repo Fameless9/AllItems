@@ -2,7 +2,7 @@ package net.fameless.allitems.manager;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import net.fameless.allitems.game.ItemFile;
+import net.fameless.allitems.game.DataFile;
 import net.fameless.allitems.util.Format;
 import org.bukkit.Material;
 
@@ -17,7 +17,7 @@ public class ItemManager {
     private static Material currentItem = null;
 
     public static void loadToList() {
-        for (Map.Entry entry : ItemFile.getItemObject().entrySet()) {
+        for (Map.Entry entry : DataFile.getItemObject().entrySet()) {
             if (!((JsonPrimitive) entry.getValue()).getAsBoolean() && Material.valueOf(entry.getKey().toString()) != null) {
                 materials.add(Material.valueOf(entry.getKey().toString()));
             }
@@ -36,7 +36,6 @@ public class ItemManager {
         } catch (IndexOutOfBoundsException e) {
             currentItem = null;
         }
-
     }
 
     public static Material getCurrentItem() {
@@ -54,18 +53,18 @@ public class ItemManager {
     }
 
     public static void markedAsFinished(Material material) {
-        if (ItemFile.getItemObject().has(material.name())) {
-            JsonObject newFinalObject = ItemFile.getRootObject();
-            JsonObject newItemObject = ItemFile.getItemObject();
+        if (DataFile.getItemObject().has(material.name())) {
+            JsonObject newFinalObject = DataFile.getRootObject();
+            JsonObject newItemObject = DataFile.getItemObject();
             newItemObject.addProperty(material.name(), true);
             newFinalObject.add("items", newItemObject);
-            ItemFile.saveJsonFile(newFinalObject);
+            DataFile.saveJsonFile(newFinalObject);
         }
     }
 
     public static int getItemAmount() {
         int i = 0;
-        for (Map.Entry ignored : ItemFile.getItemObject().entrySet()) {
+        for (Map.Entry ignored : DataFile.getItemObject().entrySet()) {
             i++;
         }
         return i;
@@ -73,7 +72,7 @@ public class ItemManager {
 
     public static int getFinishedAmount() {
         int i = 0;
-        for (Map.Entry entry : ItemFile.getItemObject().entrySet()) {
+        for (Map.Entry entry : DataFile.getItemObject().entrySet()) {
             if (((JsonPrimitive) entry.getValue()).getAsBoolean()) {
                 i++;
             }
@@ -82,12 +81,12 @@ public class ItemManager {
     }
 
     public static void removeMaterial(Material material) {
-        if (ItemFile.getItemObject().has(material.name())) {
-            JsonObject newFinalObject = ItemFile.getRootObject();
-            JsonObject newItemObject = ItemFile.getItemObject();
+        if (DataFile.getItemObject().has(material.name())) {
+            JsonObject newFinalObject = DataFile.getRootObject();
+            JsonObject newItemObject = DataFile.getItemObject();
             newItemObject.remove(material.name());
             newFinalObject.add("items", newItemObject);
-            ItemFile.saveJsonFile(newFinalObject);
+            DataFile.saveJsonFile(newFinalObject);
         }
     }
 }

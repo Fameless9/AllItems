@@ -1,5 +1,5 @@
 name: AllItems
-version: '1.0.2'
+version: '1.0.3'
 main: net.fameless.allitems.AllItems
 api-version: '1.20'
 author: Fameless9
@@ -10,3 +10,4 @@ commands:
   stats:
   settings:
     aliases: [menu]
+  playerstats:

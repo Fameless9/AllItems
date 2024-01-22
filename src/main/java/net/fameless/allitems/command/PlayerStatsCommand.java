@@ -1,13 +1,11 @@
 package net.fameless.allitems.command;
 
-import com.google.gson.JsonPrimitive;
 import net.fameless.allitems.AllItems;
 import net.fameless.allitems.game.DataFile;
-import net.fameless.allitems.util.Format;
-import net.fameless.allitems.util.ItemBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -18,21 +16,21 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class StatsCommand implements CommandExecutor, Listener {
+public class PlayerStatsCommand implements CommandExecutor, Listener {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.RED + "Only players may use this command.");
             return false;
         }
-        if (!AllItems.getInstance().getConfig().getBoolean("enable_stats")) {
-            sender.sendMessage(ChatColor.RED + "Stats are disabled.");
+        if (!AllItems.getInstance().getConfig().getBoolean("enable_playerstats")) {
+            sender.sendMessage(ChatColor.RED + "Player stats are disabled.");
             return false;
         }
         new GUI((Player) sender, 1);
@@ -41,20 +39,17 @@ public class StatsCommand implements CommandExecutor, Listener {
 
     static class GUI {
         public GUI(Player player, int page) {
+            Inventory gui = Bukkit.createInventory(null, 54, "Player Stats | Page " + page);
 
-            Inventory gui = Bukkit.createInventory(null, 54, "Results | Page " + page);
+            List<UUID> playerList = new ArrayList<>();
 
-            List<Material> finishedItems = new ArrayList<>();
-
-            for (Map.Entry entry : DataFile.getItemObject().entrySet()) {
-                if (((JsonPrimitive) entry.getValue()).getAsBoolean()) {
-                    finishedItems.add(Material.getMaterial(entry.getKey().toString()));
-                }
+            for (Map.Entry entry : DataFile.getPlayerObject().entrySet()) {
+                playerList.add(UUID.fromString(entry.getKey().toString()));
             }
 
             ItemStack left;
             ItemMeta leftMeta;
-            if (PageUtil.isPageValid(finishedItems, page - 1, 52)) {
+            if (PageUtil.isPageValid(playerList, page - 1, 52)) {
                 left = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
                 leftMeta = left.getItemMeta();
                 leftMeta.setDisplayName(ChatColor.GREEN + "Go page left!");
@@ -70,7 +65,7 @@ public class StatsCommand implements CommandExecutor, Listener {
             ItemStack right;
             ItemMeta rightMeta;
 
-            if (PageUtil.isPageValid(finishedItems, page + 1, 52)) {
+            if (PageUtil.isPageValid(playerList, page + 1, 52)) {
                 right = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
                 rightMeta = right.getItemMeta();
                 rightMeta.setDisplayName(ChatColor.GREEN + "Go page right!");
@@ -84,7 +79,7 @@ public class StatsCommand implements CommandExecutor, Listener {
             gui.setItem(0, left);
             gui.setItem(8, right);
 
-            for (ItemStack itemStack : PageUtil.getPageItems(finishedItems, page, 52)) {
+            for (ItemStack itemStack : PageUtil.getPageItems(playerList, page, 52)) {
                 gui.addItem(itemStack);
             }
             player.closeInventory();
@@ -93,43 +88,44 @@ public class StatsCommand implements CommandExecutor, Listener {
     }
 
     static class PageUtil {
-        public static List<ItemStack> getPageItems(List<Material> items, int page, int spaces) {
+        public static List<ItemStack> getPageItems(List<UUID> players, int page, int spaces) {
             int startIndex = (page - 1) * spaces;
-            int endIndex = Math.min(startIndex + spaces, items.size());
+            int endIndex = Math.min(startIndex + spaces, players.size());
 
             List<ItemStack> newObjectives = new ArrayList<>();
 
             for (int i = startIndex; i < endIndex; i++) {
-                if (i >= 0 && i < items.size()) {
-                    Object object = items.get(i);
+                if (i >= 0 && i < players.size()) {
+                    OfflinePlayer player = Bukkit.getOfflinePlayer(players.get(i));
+                    ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
+                    SkullMeta meta = (SkullMeta) skull.getItemMeta();
+                    meta.setOwningPlayer(player);
+                    meta.setDisplayName(ChatColor.BLUE + player.getName());
+                    List<String> lore = new ArrayList<>();
+                    lore.add("");
+                    lore.add(ChatColor.GRAY + "Completed items: " + ChatColor.BLUE + DataFile.getPlayerObject().get(players.get(i).toString()));
+                    meta.setLore(lore);
+                    skull.setItemMeta(meta);
 
-                    if (object instanceof Material) {
-                        Material material = (Material) object;
-                        newObjectives.add(ItemBuilder.buildItem(new ItemStack(material),
-                                ChatColor.GRAY + "Item: " + ChatColor.BLUE +
-                                        Format.formatItemName(material.name().replace("_", " ")),
-                                        true,"", ChatColor.DARK_GRAY + "Time: " + (AllItems.getInstance().getConfig().get(
-                                                "ignore." + material.name()) != null ? ChatColor.BLUE + Format.formatTime(AllItems.getInstance().getConfig().getInt(
-                                                        "ignore." + material.name())) : ChatColor.GRAY + "N/A")));
-                    }
+                    newObjectives.add(skull);
                 }
             }
             return newObjectives;
         }
 
-        public static boolean isPageValid(List<Material> items, int page, int spaces) {
+        public static boolean isPageValid(List<UUID> players, int page, int spaces) {
             if (page <= 0) return false;
 
             int upperBound = page * spaces;
             int lowerBound = upperBound - spaces;
 
-            return items.size() > lowerBound;
+            return players.size() > lowerBound;
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!event.getView().getTitle().contains("Results")) return;
+        if (!event.getView().getTitle().contains("Player Stats")) return;
         if (event.getCurrentItem() == null) return;
 
         int page = Integer.parseInt(event.getInventory().getItem(0).getItemMeta().getLocalizedName());

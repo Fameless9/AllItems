@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class ItemFile {
+public class DataFile {
 
     private static final File jsonFile = new File(AllItems.getInstance().getDataFolder(), "data.json");
 
@@ -28,6 +28,7 @@ public class ItemFile {
 
         JsonObject finalObject = getRootObject();
         JsonObject itemObject = getItemObject();
+        JsonObject playerObject = getPlayerObject();
 
         List<Material> materials = new ArrayList<>();
 
@@ -51,6 +52,7 @@ public class ItemFile {
         }
 
         finalObject.add("items", itemObject);
+        finalObject.add("players", playerObject);
         saveJsonFile(finalObject);saveJsonFile(finalObject);
     }
 
@@ -112,6 +114,13 @@ public class ItemFile {
     public static JsonObject getItemObject() {
         if (getRootObject().has("items")) {
             return getRootObject().getAsJsonObject("items");
+        }
+        return new JsonObject();
+    }
+
+    public static JsonObject getPlayerObject() {
+        if (getRootObject().has("players")) {
+            return getRootObject().getAsJsonObject("players");
         }
         return new JsonObject();
     }

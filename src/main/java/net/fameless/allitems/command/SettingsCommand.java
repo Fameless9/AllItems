@@ -17,11 +17,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 
 public class SettingsCommand implements CommandExecutor, Listener {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!sender.hasPermission("allitems.settings")) {
             sender.sendMessage(ChatColor.RED + "Lacking permission: 'allitems.settings'");
             return false;
@@ -38,6 +39,11 @@ public class SettingsCommand implements CommandExecutor, Listener {
     @EventHandler(ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         if (event.getView().getTitle().contains("Settings")) {
+            if (!event.getWhoClicked().hasPermission("allitems.settings.settings")) {
+                event.getWhoClicked().sendMessage(ChatColor.RED + "Lacking permission: 'allitems.settings.settings'");
+                event.getWhoClicked().closeInventory();
+                return;
+            }
             event.setCancelled(true);
             switch (event.getSlot()) {
                 case 0: {
@@ -51,6 +57,11 @@ public class SettingsCommand implements CommandExecutor, Listener {
             }
         }
         if (event.getView().getTitle().contains("Timer settings")) {
+            if (!event.getWhoClicked().hasPermission("allitems.settings.timer")) {
+                event.getWhoClicked().sendMessage(ChatColor.RED + "Lacking permission: 'allitems.settings.timer'");
+                event.getWhoClicked().closeInventory();
+                return;
+            }
             event.setCancelled(true);
             switch (event.getSlot()) {
                 case 0: {
@@ -76,6 +87,11 @@ public class SettingsCommand implements CommandExecutor, Listener {
             event.getWhoClicked().openInventory(getTimerInv());
         }
         if (event.getView().getTitle().contains("Game settings")) {
+            if (!event.getWhoClicked().hasPermission("allitems.settings.game")) {
+                event.getWhoClicked().sendMessage(ChatColor.RED + "Lacking permission: 'allitems.settings.game'");
+                event.getWhoClicked().closeInventory();
+                return;
+            }
             event.setCancelled(true);
             switch (event.getSlot()) {
                 case 0: {
