@@ -16,8 +16,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,10 +41,11 @@ public class StatsCommand implements CommandExecutor, Listener {
         return false;
     }
 
-    static class GUI {
-        public GUI(Player player, int page) {
+    static class GUI implements InventoryHolder {
+        private Inventory gui;
 
-            Inventory gui = Bukkit.createInventory(null, 54, "Results | Page " + page);
+        public GUI(Player player, int page) {
+            gui = Bukkit.createInventory(this, 54, "Results | Page " + page);
 
             List<Material> finishedItems = new ArrayList<>();
 
@@ -90,6 +93,12 @@ public class StatsCommand implements CommandExecutor, Listener {
             player.closeInventory();
             player.openInventory(gui);
         }
+
+        @NotNull
+        @Override
+        public Inventory getInventory() {
+            return gui;
+        }
     }
 
     static class PageUtil {
@@ -129,7 +138,7 @@ public class StatsCommand implements CommandExecutor, Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!event.getView().getTitle().contains("Results")) return;
+        if (!(event.getInventory().getHolder() instanceof GUI)) return;
         if (event.getCurrentItem() == null) return;
 
         int page = Integer.parseInt(event.getInventory().getItem(0).getItemMeta().getLocalizedName());
