@@ -1,9 +1,11 @@
 package net.fameless.allitems.command;
 
+import com.google.gson.JsonElement;
 import net.fameless.allitems.AllItems;
 import net.fameless.allitems.game.DataFile;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -20,18 +22,21 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class PlayerStatsCommand implements CommandExecutor, Listener {
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "Only players may use this command.");
+            sender.sendMessage(Component.text("Only players may use this command.", NamedTextColor.RED));
             return false;
         }
         if (!AllItems.getInstance().getConfig().getBoolean("enable_playerstats")) {
-            sender.sendMessage(ChatColor.RED + "Player stats are disabled.");
+            sender.sendMessage(Component.text("Player stats are disabled.", NamedTextColor.RED));
             return false;
         }
         new GUI((Player) sender, 1);
@@ -39,14 +44,15 @@ public class PlayerStatsCommand implements CommandExecutor, Listener {
     }
 
     static class GUI implements InventoryHolder {
-        private Inventory gui;
+        private final Inventory gui;
+
         public GUI(Player player, int page) {
-            gui = Bukkit.createInventory(this, 54, "Player Stats | Page " + page);
+            gui = Bukkit.createInventory(this, 54, Component.text("Player Stats | Page " + page, NamedTextColor.WHITE));
 
             List<UUID> playerList = new ArrayList<>();
 
-            for (Map.Entry entry : DataFile.getPlayerObject().entrySet()) {
-                playerList.add(UUID.fromString(entry.getKey().toString()));
+            for (Map.Entry<String, JsonElement> entry : DataFile.getPlayerObject().entrySet()) {
+                playerList.add(UUID.fromString(entry.getKey()));
             }
 
             ItemStack left;
@@ -54,11 +60,11 @@ public class PlayerStatsCommand implements CommandExecutor, Listener {
             if (PageUtil.isPageValid(playerList, page - 1, 52)) {
                 left = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
                 leftMeta = left.getItemMeta();
-                leftMeta.setDisplayName(ChatColor.GREEN + "Go page left!");
+                leftMeta.displayName(Component.text("Go page left!", NamedTextColor.GREEN));
             } else {
                 left = new ItemStack(Material.RED_STAINED_GLASS_PANE);
                 leftMeta = left.getItemMeta();
-                leftMeta.setDisplayName(ChatColor.RED + "Can't go left!");
+                leftMeta.displayName(Component.text("Can't go left!", NamedTextColor.RED));
             }
 
             leftMeta.setLocalizedName(page + "");
@@ -70,11 +76,11 @@ public class PlayerStatsCommand implements CommandExecutor, Listener {
             if (PageUtil.isPageValid(playerList, page + 1, 52)) {
                 right = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
                 rightMeta = right.getItemMeta();
-                rightMeta.setDisplayName(ChatColor.GREEN + "Go page right!");
+                rightMeta.displayName(Component.text("Go page right!", NamedTextColor.GREEN));
             } else {
                 right = new ItemStack(Material.RED_STAINED_GLASS_PANE);
                 rightMeta = right.getItemMeta();
-                rightMeta.setDisplayName(ChatColor.RED + "Can't go right!");
+                rightMeta.displayName(Component.text("Can't go right!", NamedTextColor.RED));
             }
 
             right.setItemMeta(rightMeta);
@@ -108,11 +114,12 @@ public class PlayerStatsCommand implements CommandExecutor, Listener {
                     ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
                     SkullMeta meta = (SkullMeta) skull.getItemMeta();
                     meta.setOwningPlayer(player);
-                    meta.setDisplayName(ChatColor.BLUE + player.getName());
-                    List<String> lore = new ArrayList<>();
-                    lore.add("");
-                    lore.add(ChatColor.GRAY + "Completed items: " + ChatColor.BLUE + DataFile.getPlayerObject().get(players.get(i).toString()));
-                    meta.setLore(lore);
+                    meta.displayName(Component.text(player.getName(), NamedTextColor.BLUE));
+                    List<Component> lore = new ArrayList<>();
+                    lore.add(Component.text(""));
+                    lore.add(Component.text("Completed items: ", NamedTextColor.GRAY)
+                            .append(Component.text(DataFile.getPlayerObject().get(String.valueOf(players.get(i))).getAsInt(), NamedTextColor.BLUE)));
+                    meta.lore(lore);
                     skull.setItemMeta(meta);
 
                     newObjectives.add(skull);

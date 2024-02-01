@@ -10,12 +10,18 @@ import net.fameless.allitems.manager.ConfigManager;
 import net.fameless.allitems.manager.ItemManager;
 import net.fameless.allitems.timer.Timer;
 import net.fameless.allitems.timer.TimerTabCompleter;
+import net.kyori.adventure.key.Key;
+import net.kyori.adventure.translation.GlobalTranslator;
+import net.kyori.adventure.translation.TranslationRegistry;
+import net.kyori.adventure.util.UTF8ResourceBundleControl;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 public final class AllItems extends JavaPlugin {
 
@@ -31,6 +37,8 @@ public final class AllItems extends JavaPlugin {
     public void onEnable() {
 
         saveDefaultConfig();
+        saveResource("lang/Bundle_de_DE.properties", true);
+        saveResource("lang/Bundle_fr_FR.properties", true);
 
         try {
             DataFile.init();
@@ -51,6 +59,15 @@ public final class AllItems extends JavaPlugin {
         StatsCommand statsCommand = new StatsCommand();
         SettingsCommand settingsCommand = new SettingsCommand();
         PlayerStatsCommand playerStatsCommand = new PlayerStatsCommand();
+
+        TranslationRegistry germanRegistry = TranslationRegistry.create(Key.key("de"));
+        TranslationRegistry frenchRegistry = TranslationRegistry.create(Key.key("fr"));
+        ResourceBundle germanBundle = ResourceBundle.getBundle("Bundle", Locale.GERMANY, UTF8ResourceBundleControl.get());
+        ResourceBundle frenchBundle = ResourceBundle.getBundle("Bundle", Locale.FRANCE, UTF8ResourceBundleControl.get());
+        germanRegistry.registerAll(Locale.GERMANY, germanBundle, true);
+        frenchRegistry.registerAll(Locale.FRANCE, frenchBundle, true);
+        GlobalTranslator.translator().addSource(germanRegistry);
+        GlobalTranslator.translator().addSource(frenchRegistry);
 
         Bukkit.getPluginManager().registerEvents(new GameListener(), this);
         Bukkit.getPluginManager().registerEvents(settingsCommand, this);

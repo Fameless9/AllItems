@@ -4,9 +4,14 @@ import net.fameless.allitems.AllItems;
 import net.fameless.allitems.manager.BossbarManager;
 import net.fameless.allitems.manager.ItemManager;
 import net.fameless.allitems.util.Format;
+import net.fameless.allitems.util.Head;
 import net.fameless.allitems.util.ItemBuilder;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -25,11 +30,11 @@ public class SettingsCommand implements CommandExecutor, Listener, InventoryHold
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (!sender.hasPermission("allitems.settings")) {
-            sender.sendMessage(ChatColor.RED + "Lacking permission: 'allitems.settings'");
+            sender.sendMessage(Component.text("Lacking permission: 'allitems.settings'", NamedTextColor.RED));
             return false;
         }
         if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "Only players may use this command.");
+            sender.sendMessage(Component.text("Only players may use this command.", NamedTextColor.RED));
             return false;
         }
 
@@ -42,7 +47,7 @@ public class SettingsCommand implements CommandExecutor, Listener, InventoryHold
         if (!(event.getInventory().getHolder() instanceof SettingsCommand)) return;
         if (event.getView().getTitle().contains("Settings")) {
             if (!event.getWhoClicked().hasPermission("allitems.settings.settings")) {
-                event.getWhoClicked().sendMessage(ChatColor.RED + "Lacking permission: 'allitems.settings.settings'");
+                event.getWhoClicked().sendMessage(Component.text("Lacking permission: 'allitems.settings.settings'", NamedTextColor.RED));
                 event.getWhoClicked().closeInventory();
                 return;
             }
@@ -56,12 +61,19 @@ public class SettingsCommand implements CommandExecutor, Listener, InventoryHold
                     event.getWhoClicked().openInventory(getGameInv());
                     break;
                 }
+                case 8: {
+                    event.getWhoClicked().sendMessage(Component.text("Report any bugs here: ", NamedTextColor.GRAY)
+                            .append(Component.text("https://github.com/Fameless9/AllItems/issues", NamedTextColor.BLUE)
+                                    .clickEvent(ClickEvent.clickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/Fameless9/AllItems/issues"))
+                                    .hoverEvent(HoverEvent.hoverEvent(HoverEvent.Action.SHOW_TEXT, Component.text("Github page", NamedTextColor.BLUE)))));
+                    event.getWhoClicked().closeInventory();
+                }
             }
             return;
         }
         if (event.getView().getTitle().contains("Timer settings")) {
             if (!event.getWhoClicked().hasPermission("allitems.settings.timer")) {
-                event.getWhoClicked().sendMessage(ChatColor.RED + "Lacking permission: 'allitems.settings.timer'");
+                event.getWhoClicked().sendMessage(Component.text("Lacking permission: 'allitems.settings.timer'", NamedTextColor.RED));
                 event.getWhoClicked().closeInventory();
                 return;
             }
@@ -92,7 +104,7 @@ public class SettingsCommand implements CommandExecutor, Listener, InventoryHold
         }
         if (event.getView().getTitle().contains("Game settings")) {
             if (!event.getWhoClicked().hasPermission("allitems.settings.game")) {
-                event.getWhoClicked().sendMessage(ChatColor.RED + "Lacking permission: 'allitems.settings.game'");
+                event.getWhoClicked().sendMessage(Component.text("Lacking permission: 'allitems.settings.game'", NamedTextColor.RED));
                 event.getWhoClicked().closeInventory();
                 return;
             }
@@ -100,11 +112,13 @@ public class SettingsCommand implements CommandExecutor, Listener, InventoryHold
             switch (event.getSlot()) {
                 case 0: {
                     if (ItemManager.getNextItem().equals("None")) {
-                        event.getWhoClicked().sendMessage(ChatColor.RED + "No item left to skip.");
+                        event.getWhoClicked().sendMessage(Component.text("No item left to skip.", NamedTextColor.RED));
                         return;
                     }
-                    Bukkit.broadcastMessage(ChatColor.BLUE + event.getWhoClicked().getName() + ChatColor.GRAY + " skipped " +
-                            Format.formatItemName(ItemManager.getCurrentItem().name().replace("_", " ")));
+                    Bukkit.broadcast(Component.text(event.getWhoClicked().getName(), NamedTextColor.BLUE).append(Component.text(" skipped ",
+                            NamedTextColor.GRAY)).append(Component.text(Format.formatItemName(ItemManager.getCurrentItem().name().replace("_", " "))
+                            , NamedTextColor.GRAY)));
+
                     ItemManager.removeMaterial(ItemManager.getCurrentItem());
                     ItemManager.updateItem();
                     BossbarManager.updateBossbar();
@@ -120,36 +134,48 @@ public class SettingsCommand implements CommandExecutor, Listener, InventoryHold
     }
 
     private Inventory getSettingsInv() {
-        Inventory inventory = Bukkit.createInventory(this, 9, ChatColor.BLUE.toString() + ChatColor.BOLD + "Settings");
-        inventory.setItem(0, ItemBuilder.buildItem(new ItemStack(Material.CLOCK), ChatColor.BLUE + "Timer", true,
-                ChatColor.GRAY + "Open Timer settings"));
-        inventory.setItem(1, ItemBuilder.buildItem(new ItemStack(Material.ARROW), ChatColor.BLUE + "Game", true,
-                ChatColor.GRAY + "Open Game settings"));
+        Inventory inventory = Bukkit.createInventory(this, 9, Component.text("Settings", NamedTextColor.BLUE, TextDecoration.BOLD));
+        inventory.setItem(0, ItemBuilder.buildItem(new ItemStack(Material.CLOCK), Component.text("Timer", NamedTextColor.BLUE), true,
+                Component.text("Open Timer settings", NamedTextColor.GRAY)));
+        inventory.setItem(1, ItemBuilder.buildItem(new ItemStack(Material.ARROW), Component.text("Game", NamedTextColor.BLUE), true,
+                Component.text("Open Game settings", NamedTextColor.GRAY)));
+        inventory.setItem(8, ItemBuilder.buildItem(Head.INFO.getAsItemStack(), Component.text("Help", NamedTextColor.BLUE), true,
+                Component.text("Click to go to the github issues page,", NamedTextColor.GRAY, TextDecoration.ITALIC),
+                Component.text("or contact me on Discord: ", NamedTextColor.GRAY)
+                        .append(Component.text("fameless9", NamedTextColor.DARK_PURPLE))));
         return inventory;
     }
 
     private Inventory getTimerInv() {
-        Inventory inventory = Bukkit.createInventory(this, 9, ChatColor.BLUE.toString() + ChatColor.BOLD + "Timer settings");
-        inventory.setItem(0, ItemBuilder.buildItem(new ItemStack(Material.CLOCK), ChatColor.BLUE + "Toggle", true,
-                ChatColor.GRAY + "Click to toggle the timer", "", ChatColor.GRAY + "Timer is currently " + ChatColor.BLUE +
-                        (AllItems.getInstance().getTimer().isRunning() ? "running" : "paused")));
-        inventory.setItem(1, ItemBuilder.buildItem(new ItemStack(Material.PURPLE_DYE), ChatColor.BLUE + "Gradient", true,
-                ChatColor.GRAY + "Click to toggle the timer gradient", "", ChatColor.GRAY + "Currently set to: " + ChatColor.BLUE +
-                AllItems.getInstance().getTimer().isGradientEnabled()));
-        inventory.setItem(2, ItemBuilder.buildItem(new ItemStack(Material.PURPLE_DYE), ChatColor.BLUE + "Gradient Speed", true,
-                ChatColor.GRAY + "Click to cycle through the speeds", "", ChatColor.GRAY + "Current speed: " + ChatColor.BLUE +
-                        AllItems.getInstance().getTimer().getSpeed()));
+        Inventory inventory = Bukkit.createInventory(this, 9, Component.text("Timer settings", NamedTextColor.BLUE, TextDecoration.BOLD));
+
+        inventory.setItem(0, ItemBuilder.buildItem(new ItemStack(Material.CLOCK), Component.text("Toggle", NamedTextColor.BLUE), true,
+                Component.text("Click to toggle the timer", NamedTextColor.GRAY, TextDecoration.ITALIC),
+                Component.text("Timer is currently ", NamedTextColor.GRAY)
+                        .append(Component.text(AllItems.getInstance().getTimer().isRunning() ? "running" : "paused", NamedTextColor.BLUE))));
+        inventory.setItem(1, ItemBuilder.buildItem(new ItemStack(Material.PURPLE_DYE), Component.text("Gradient", NamedTextColor.BLUE), true,
+                Component.text("Click to toggle the timer gradient", NamedTextColor.GRAY, TextDecoration.ITALIC),
+                Component.text("Currently set to: ", NamedTextColor.GRAY)
+                        .append(Component.text(AllItems.getInstance().getTimer().isGradientEnabled(), NamedTextColor.BLUE))));
+        inventory.setItem(2, ItemBuilder.buildItem(new ItemStack(Material.PURPLE_DYE), Component.text("Gradient Speed", NamedTextColor.BLUE), true,
+                Component.text("Click to cycle through the speeds", NamedTextColor.GRAY, TextDecoration.ITALIC),
+                Component.text("Current speed: ", NamedTextColor.GRAY)
+                        .append(Component.text(AllItems.getInstance().getTimer().getSpeed(), NamedTextColor.BLUE))));
+
         return inventory;
     }
 
     private Inventory getGameInv() {
-        Inventory inventory = Bukkit.createInventory(this, 9, ChatColor.BLUE.toString() + ChatColor.BOLD + "Game settings");
-        inventory.setItem(0, ItemBuilder.buildItem(new ItemStack(Material.BARRIER), ChatColor.BLUE + "Skip", true,
-                ChatColor.GRAY + "Click to skip the current item", "", ChatColor.GRAY + "Current item: " + ChatColor.BLUE +
-                        (ItemManager.getCurrentItem() != null ? Format.formatItemName(ItemManager.getCurrentItem().name().replace("_", " "))
-                                : "None")));
-        inventory.setItem(1, ItemBuilder.buildItem(new ItemStack(Material.BOOK), ChatColor.BLUE + "Stats", true,
-                ChatColor.GRAY + "Click to open the stats"));
+        Inventory inventory = Bukkit.createInventory(this, 9, Component.text("Game settings", NamedTextColor.BLUE, TextDecoration.BOLD));
+
+        inventory.setItem(0, ItemBuilder.buildItem(new ItemStack(Material.BARRIER), Component.text("Skip", NamedTextColor.BLUE), true,
+                Component.text("Click to skip the current item", NamedTextColor.GRAY, TextDecoration.ITALIC),
+                Component.text("Current item: ", NamedTextColor.GRAY)
+                        .append(Component.text(ItemManager.getCurrentItem() != null ?
+                                Format.formatItemName(ItemManager.getCurrentItem().name().replace("_", " ")) : "None", NamedTextColor.BLUE))));
+        inventory.setItem(1, ItemBuilder.buildItem(new ItemStack(Material.BOOK), Component.text("Stats", NamedTextColor.BLUE), true,
+                Component.text("Click to open the stats", NamedTextColor.GRAY, TextDecoration.ITALIC)));
+
         return inventory;
     }
 

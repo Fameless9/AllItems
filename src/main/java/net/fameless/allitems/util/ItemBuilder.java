@@ -1,5 +1,6 @@
 package net.fameless.allitems.util;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -10,18 +11,17 @@ import java.util.List;
 
 public class ItemBuilder {
 
-    public static ItemStack buildItem(ItemStack itemStack, String name, boolean hideAttributes, String ...lore) {
+    public static ItemStack buildItem(ItemStack itemStack, Component name, boolean hideAttributes, Component ...lore) {
         ItemMeta meta = itemStack.getItemMeta();
-        meta.setDisplayName(name);
+        meta.displayName(name);
 
         if (hideAttributes) {
             meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
         }
 
-        List<String> lores = new ArrayList<>();
-        lores.addAll(Arrays.asList(lore));
+        List<Component> lores = new ArrayList<>(Arrays.asList(lore));
 
-        meta.setLore(lores);
+        meta.lore(lores);
         itemStack.setItemMeta(meta);
         return itemStack;
     }

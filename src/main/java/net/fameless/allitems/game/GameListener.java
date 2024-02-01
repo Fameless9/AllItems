@@ -5,8 +5,11 @@ import net.fameless.allitems.AllItems;
 import net.fameless.allitems.manager.BossbarManager;
 import net.fameless.allitems.manager.ItemManager;
 import net.fameless.allitems.util.Format;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
@@ -28,7 +31,6 @@ public class GameListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerJoin(PlayerJoinEvent event) {
         event.getPlayer().setResourcePack("https://drive.usercontent.google.com/download?id=1K5On0YGYJlknv9p2Wgdz9qGyrChWn8fl&export=download&authuser=1&confirm=t&uuid=b67aa88a-90e7-42ad-ab70-deaa2eea4f9e&at=APZUnTVJb5KuZWw3nzyYMd434CfL:1693104909215");
-        BossbarManager.updateBossbar();
         if (!DataFile.getPlayerObject().has(event.getPlayer().getUniqueId().toString())) {
             JsonObject rootObject = DataFile.getRootObject();
             JsonObject playerObject = DataFile.getPlayerObject();
@@ -36,23 +38,25 @@ public class GameListener implements Listener {
             rootObject.add("players", playerObject);
             DataFile.saveJsonFile(rootObject);
         }
-        event.setJoinMessage(ChatColor.BLUE + event.getPlayer().getName() + ChatColor.GRAY + " joined the game");
+        event.joinMessage(Component.text(event.getPlayer().getName(), NamedTextColor.BLUE).append(Component.text(" joined the game", NamedTextColor.GRAY)));
+        BossbarManager.updateBossbar();
     }
+
 
     @EventHandler(ignoreCancelled = true)
     public void onAsyncPlayerChat(AsyncPlayerChatEvent event) {
         event.setCancelled(true);
-        Bukkit.broadcastMessage(ChatColor.BLUE + event.getPlayer().getName() + ChatColor.GRAY + ": " + event.getMessage());
+        Bukkit.broadcast(Component.text(event.getPlayer().getName(), NamedTextColor.BLUE).append(Component.text(": " + event.getMessage(), NamedTextColor.GRAY)));
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerResourcePackStatus(PlayerResourcePackStatusEvent event) {
         if (event.getStatus().equals(PlayerResourcePackStatusEvent.Status.DECLINED)) {
-            event.getPlayer().sendMessage(ChatColor.RED + "Allow resource packs to hide the bossbar!");
+            event.getPlayer().sendMessage(Component.text("Allow resource packs to hide the bossbar!", NamedTextColor.RED));
             return;
         }
         if (event.getStatus().equals(PlayerResourcePackStatusEvent.Status.FAILED_DOWNLOAD)) {
-            event.getPlayer().sendMessage(ChatColor.RED + "Failed to download resource pack!");
+            event.getPlayer().sendMessage(Component.text("Failed to download resource pack!", NamedTextColor.RED));
         }
     }
 
@@ -64,10 +68,13 @@ public class GameListener implements Listener {
                     Inventory playerInv = players.getInventory();
                     for (ItemStack stack : playerInv.getContents()) {
                         if (stack != null && stack.getType().equals(ItemManager.getCurrentItem())) {
-                            Bukkit.broadcastMessage(ChatColor.BLUE + players.getName() + ChatColor.GRAY + " completed " +
-                                    Format.formatItemName(stack.getType().name().replace("_", " "))
-                                    + ChatColor.GRAY + " (" + ChatColor.GREEN + (ItemManager.getFinishedAmount() + 1) + ChatColor.GRAY + "/" +
-                                    ItemManager.getItemAmount() + ")");
+                            Material material = ItemManager.getCurrentItem();
+                            String key = material.getItemTranslationKey();
+                            Bukkit.broadcast(Component.text(players.getName(), NamedTextColor.BLUE)
+                                    .append(Component.text(" completed ", NamedTextColor.GRAY).append(Component.translatable(key,
+                                                    Format.formatItemName(material.name().replace("_", " "))))
+                                    .append(Component.text(" (", NamedTextColor.GRAY)).append(Component.text(ItemManager.getFinishedAmount() + 1, NamedTextColor.GREEN))
+                                    .append(Component.text("/" + ItemManager.getItemAmount() + ")", NamedTextColor.GRAY))));
                             players.playSound(players.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, 1, 20);
                             AllItems.getInstance().getConfig().set("ignore." + stack.getType().name(), AllItems.getInstance().getTimer().getTime());
                             AllItems.getInstance().saveConfig();
@@ -81,6 +88,9 @@ public class GameListener implements Listener {
                             ItemManager.markedAsFinished(stack.getType());
                             ItemManager.updateItem();
                             BossbarManager.updateBossbar();
+                            if (ItemManager.getCurrentItem() == null) {
+                                Bukkit.broadcast(Component.text("You have collected every item.", NamedTextColor.GREEN, TextDecoration.BOLD));
+                            }
                         }
                     }
                 }

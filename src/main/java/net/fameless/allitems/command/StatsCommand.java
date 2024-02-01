@@ -1,12 +1,13 @@
 package net.fameless.allitems.command;
 
-import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonElement;
 import net.fameless.allitems.AllItems;
 import net.fameless.allitems.game.DataFile;
 import net.fameless.allitems.util.Format;
 import net.fameless.allitems.util.ItemBuilder;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,6 +18,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
@@ -28,13 +30,13 @@ import java.util.Map;
 public class StatsCommand implements CommandExecutor, Listener {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "Only players may use this command.");
+            sender.sendMessage(Component.text("Only players may use this command.", NamedTextColor.RED));
             return false;
         }
         if (!AllItems.getInstance().getConfig().getBoolean("enable_stats")) {
-            sender.sendMessage(ChatColor.RED + "Stats are disabled.");
+            sender.sendMessage(Component.text("Stats are disabled.", NamedTextColor.RED));
             return false;
         }
         new GUI((Player) sender, 1);
@@ -42,16 +44,16 @@ public class StatsCommand implements CommandExecutor, Listener {
     }
 
     static class GUI implements InventoryHolder {
-        private Inventory gui;
+        private final Inventory gui;
 
         public GUI(Player player, int page) {
-            gui = Bukkit.createInventory(this, 54, "Results | Page " + page);
+            gui = Bukkit.createInventory(this, 54, Component.text("Results | Page " + page));
 
             List<Material> finishedItems = new ArrayList<>();
 
-            for (Map.Entry entry : DataFile.getItemObject().entrySet()) {
-                if (((JsonPrimitive) entry.getValue()).getAsBoolean()) {
-                    finishedItems.add(Material.getMaterial(entry.getKey().toString()));
+            for (Map.Entry<String, JsonElement> entry : DataFile.getItemObject().entrySet()) {
+                if (entry.getValue().getAsBoolean()) {
+                    finishedItems.add(Material.getMaterial(entry.getKey()));
                 }
             }
 
@@ -60,11 +62,11 @@ public class StatsCommand implements CommandExecutor, Listener {
             if (PageUtil.isPageValid(finishedItems, page - 1, 52)) {
                 left = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
                 leftMeta = left.getItemMeta();
-                leftMeta.setDisplayName(ChatColor.GREEN + "Go page left!");
+                leftMeta.displayName(Component.text("Go page left!", NamedTextColor.GREEN));
             } else {
                 left = new ItemStack(Material.RED_STAINED_GLASS_PANE);
                 leftMeta = left.getItemMeta();
-                leftMeta.setDisplayName(ChatColor.RED + "Can't go left!");
+                leftMeta.displayName(Component.text("Can't go left!", NamedTextColor.RED));
             }
 
             leftMeta.setLocalizedName(page + "");
@@ -76,11 +78,11 @@ public class StatsCommand implements CommandExecutor, Listener {
             if (PageUtil.isPageValid(finishedItems, page + 1, 52)) {
                 right = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
                 rightMeta = right.getItemMeta();
-                rightMeta.setDisplayName(ChatColor.GREEN + "Go page right!");
+                rightMeta.displayName(Component.text("Go page right!", NamedTextColor.GREEN));
             } else {
                 right = new ItemStack(Material.RED_STAINED_GLASS_PANE);
                 rightMeta = right.getItemMeta();
-                rightMeta.setDisplayName(ChatColor.RED + "Can't go right!");
+                rightMeta.displayName(Component.text("Can't go right!", NamedTextColor.RED));
             }
 
             right.setItemMeta(rightMeta);
@@ -110,16 +112,21 @@ public class StatsCommand implements CommandExecutor, Listener {
 
             for (int i = startIndex; i < endIndex; i++) {
                 if (i >= 0 && i < items.size()) {
-                    Object object = items.get(i);
+                    Material object = items.get(i);
 
-                    if (object instanceof Material) {
-                        Material material = (Material) object;
-                        newObjectives.add(ItemBuilder.buildItem(new ItemStack(material),
-                                ChatColor.GRAY + "Item: " + ChatColor.BLUE +
-                                        Format.formatItemName(material.name().replace("_", " ")),
-                                        true,"", ChatColor.DARK_GRAY + "Time: " + (AllItems.getInstance().getConfig().get(
-                                                "ignore." + material.name()) != null ? ChatColor.BLUE + Format.formatTime(AllItems.getInstance().getConfig().getInt(
-                                                        "ignore." + material.name())) : ChatColor.GRAY + "N/A")));
+                    if (object != null) {
+                        ItemStack stack = ItemBuilder.buildItem(new ItemStack(object),
+                                Component.text("Item: ", NamedTextColor.GRAY).append(Component.text(Format.formatItemName(object.name().replace("_", " ")))),
+                                true,Component.text(""), Component.text( "Time: ", NamedTextColor.DARK_GRAY).append(
+                                (AllItems.getInstance().getConfig().get("ignore." + object.name()) != null ?
+                                        Component.text(Format.formatTime(AllItems.getInstance().getConfig().getInt("ignore." + object.name())), NamedTextColor.BLUE)
+                                        : Component.text("N/A", NamedTextColor.GRAY))));
+                        ItemMeta meta = stack.getItemMeta();
+                        if (meta != null) for (ItemFlag flag : ItemFlag.values()) {
+                            meta.addItemFlags(flag);
+                        }
+                        stack.setItemMeta(meta);
+                        newObjectives.add(stack);
                     }
                 }
             }
