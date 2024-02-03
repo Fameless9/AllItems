@@ -8,7 +8,7 @@
     <version>1.0.4</version>
     <packaging>jar</packaging>
 
-    <name>AllItems</name>
+    <name>AllItems-paper</name>
 
     <properties>
         <java.version>1.8</java.version>
