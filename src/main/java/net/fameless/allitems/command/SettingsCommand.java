@@ -111,7 +111,7 @@ public class SettingsCommand implements CommandExecutor, Listener, InventoryHold
             event.setCancelled(true);
             switch (event.getSlot()) {
                 case 0: {
-                    if (ItemManager.getNextItem().equals("None")) {
+                    if (ItemManager.getNextItem() == null) {
                         event.getWhoClicked().sendMessage(Component.text("No item left to skip.", NamedTextColor.RED));
                         return;
                     }

@@ -35,7 +35,7 @@ public class PlayerStatsCommand implements CommandExecutor, Listener {
             sender.sendMessage(Component.text("Only players may use this command.", NamedTextColor.RED));
             return false;
         }
-        if (!AllItems.getInstance().getConfig().getBoolean("enable_playerstats")) {
+        if (!AllItems.getInstance().getConfig().getBoolean("enable_playerstats") && !sender.isOp()) {
             sender.sendMessage(Component.text("Player stats are disabled.", NamedTextColor.RED));
             return false;
         }

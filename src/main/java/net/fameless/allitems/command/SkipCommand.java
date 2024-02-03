@@ -24,7 +24,7 @@ public class SkipCommand implements CommandExecutor {
             sender.sendMessage(Component.text("Only players may use this command.", NamedTextColor.RED));
             return false;
         }
-        if (ItemManager.getNextItem().equals("None")) {
+        if (ItemManager.getNextItem() == null) {
             sender.sendMessage(Component.text("No item left to skip.", NamedTextColor.RED));
             return false;
         }
