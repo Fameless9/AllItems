@@ -88,7 +88,7 @@ public class Timer implements CommandExecutor {
                     progress = 1;
                     inverted = !inverted;
                 } else {
-                    progress = progress + speed;
+                    progress += speed;
                 }
             }
         }.runTaskTimer(AllItems.getInstance(), 0, 1);
@@ -97,31 +97,28 @@ public class Timer implements CommandExecutor {
     private final MiniMessage serializer = MiniMessage.miniMessage();
 
     private void sendActionbar() {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (!isRunning()) {
-                if (isGradientEnabled) {
-                    Component parsed;
-                    if (inverted) {
-                        parsed = serializer.deserialize("<bold><italic><gradient:#8a4fff:blue:" + (double) progress / 100 + ">Timer paused</gradient>");
-                    } else {
-                        parsed = serializer.deserialize("<bold><italic><gradient:blue:#8a4fff:" + (double) progress / 100 + ">Timer paused</gradient>");
-                    }
-                    p.sendActionBar(parsed);
-                    return;
-                }
-                p.sendActionBar(Component.text("Timer paused", NamedTextColor.BLUE, TextDecoration.BOLD, TextDecoration.ITALIC));
+        Component parsed;
+
+        if (!isRunning()) {
+            if (isGradientEnabled) {
+                parsed = inverted
+                        ? serializer.deserialize("<bold><italic><gradient:#8a4fff:blue:" + (double) progress / 100 + ">Timer paused</gradient>")
+                        : serializer.deserialize("<bold><italic><gradient:blue:#8a4fff:" + (double) progress / 100 + ">Timer paused</gradient>");
             } else {
-                if (isGradientEnabled) {
-                    Component parsed;
-                    if (inverted) {
-                        parsed = serializer.deserialize("<bold><gradient:#8a4fff:blue:" + (double) progress / 100 + ">" + Format.formatTime(getTime()) + "</gradient>");
-                    } else {
-                        parsed = serializer.deserialize("<bold><gradient:blue:#8a4fff:" + (double) progress / 100 + ">" + Format.formatTime(getTime()) + "</gradient>");
-                    }
-                    p.sendActionBar(parsed);
-                    return;
-                }
-                p.sendActionBar(Component.text(Format.formatTime(getTime()), NamedTextColor.BLUE, TextDecoration.BOLD, TextDecoration.ITALIC));}
+                parsed = Component.text("Timer paused", NamedTextColor.BLUE, TextDecoration.BOLD, TextDecoration.ITALIC);
+            }
+        } else {
+            if (isGradientEnabled) {
+                parsed = inverted
+                        ? serializer.deserialize("<bold><gradient:#8a4fff:blue:" + (double) progress / 100 + ">" + Format.formatTime(getTime()) + "</gradient>")
+                        : serializer.deserialize("<bold><gradient:blue:#8a4fff:" + (double) progress / 100 + ">" + Format.formatTime(getTime()) + "</gradient>");
+            } else {
+                parsed = Component.text(Format.formatTime(getTime()), NamedTextColor.BLUE, TextDecoration.BOLD);
+            }
+        }
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.sendActionBar(parsed);
         }
     }
 
