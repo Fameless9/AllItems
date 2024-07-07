@@ -52,7 +52,7 @@ exclude:
     - KNOWLEDGE_BOOK
     - DIRT_PATH
 
-# Please do not touch the ignore section, as it might lead to the plugin malfunctioning.
+# Please do not touch the ignore section, unless you know what you are doing!
 ignore:
   time: 0
   gradient_enabled: true

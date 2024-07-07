@@ -1,7 +1,7 @@
 package net.fameless.allitems.manager;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import net.fameless.allitems.game.DataFile;
 import net.fameless.allitems.util.Format;
 import org.bukkit.Material;
@@ -17,9 +17,15 @@ public class ItemManager {
     private static Material currentItem = null;
 
     public static void loadToList() {
-        for (Map.Entry entry : DataFile.getItemObject().entrySet()) {
-            if (!((JsonPrimitive) entry.getValue()).getAsBoolean() && Material.valueOf(entry.getKey().toString()) != null) {
-                materials.add(Material.valueOf(entry.getKey().toString()));
+        for (Map.Entry<String, JsonElement> entry : DataFile.getItemObject().entrySet()) {
+            Material material;
+            try {
+                material = Material.valueOf(entry.getKey());
+            } catch (IllegalArgumentException e) {
+                continue;
+            }
+            if (!entry.getValue().getAsBoolean()) {
+                materials.add(material);
             }
         }
         try {
@@ -64,7 +70,7 @@ public class ItemManager {
 
     public static int getItemAmount() {
         int i = 0;
-        for (Map.Entry ignored : DataFile.getItemObject().entrySet()) {
+        for (Map.Entry<String, JsonElement> ignored : DataFile.getItemObject().entrySet()) {
             i++;
         }
         return i;
@@ -72,8 +78,8 @@ public class ItemManager {
 
     public static int getFinishedAmount() {
         int i = 0;
-        for (Map.Entry entry : DataFile.getItemObject().entrySet()) {
-            if (((JsonPrimitive) entry.getValue()).getAsBoolean()) {
+        for (Map.Entry<String, JsonElement> entry : DataFile.getItemObject().entrySet()) {
+            if (entry.getValue().getAsBoolean()) {
                 i++;
             }
         }

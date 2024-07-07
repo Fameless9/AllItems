@@ -6,12 +6,12 @@ import net.fameless.allitems.command.SkipCommand;
 import net.fameless.allitems.command.StatsCommand;
 import net.fameless.allitems.game.DataFile;
 import net.fameless.allitems.game.GameListener;
-import net.fameless.allitems.manager.ConfigManager;
 import net.fameless.allitems.manager.ItemManager;
 import net.fameless.allitems.timer.Timer;
 import net.fameless.allitems.timer.TimerTabCompleter;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
@@ -20,6 +20,7 @@ import java.time.Duration;
 public final class AllItems extends JavaPlugin {
 
     private static AllItems instance;
+    public static NamespacedKey pageKey;
     Timer timer;
 
     @Override
@@ -32,6 +33,8 @@ public final class AllItems extends JavaPlugin {
 
         saveDefaultConfig();
 
+        pageKey = new NamespacedKey(this, "guiPage");
+
         try {
             DataFile.init();
         } catch (IOException e) {
@@ -42,11 +45,10 @@ public final class AllItems extends JavaPlugin {
         }
         ItemManager.loadToList();
 
-        int time = getConfig().get("ignore.time") != null ? getConfig().getInt("ignore.time") : 0;
-        boolean gradientEnabled = getConfig().get("ignore.gradient_enabled") == null || getConfig().getBoolean("ignore.gradient_enabled");
-        int gradientSpeed = getConfig().get("ignore.gradient_speed") != null ? getConfig().getInt("ignore.gradient_speed") : 3;
+        int time = getConfig().getInt("ignore.time", 0);
+        boolean gradientEnabled = getConfig().getBoolean("ignore.gradient_enabled", false);
+        int gradientSpeed = getConfig().getInt("ignore.gradient_speed", 3);
 
-        new ConfigManager(getConfig());
         timer = new Timer(false, time, gradientEnabled, gradientSpeed);
         StatsCommand statsCommand = new StatsCommand();
         SettingsCommand settingsCommand = new SettingsCommand();

@@ -1,6 +1,6 @@
 package net.fameless.allitems.command;
 
-import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonElement;
 import net.fameless.allitems.AllItems;
 import net.fameless.allitems.game.DataFile;
 import net.fameless.allitems.util.Format;
@@ -19,6 +19,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ import java.util.Map;
 public class StatsCommand implements CommandExecutor, Listener {
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!(sender instanceof Player)) {
             sender.sendMessage(ChatColor.RED + "Only players may use this command.");
             return false;
@@ -42,16 +43,16 @@ public class StatsCommand implements CommandExecutor, Listener {
     }
 
     static class GUI implements InventoryHolder {
-        private Inventory gui;
+        private final Inventory gui;
 
         public GUI(Player player, int page) {
             gui = Bukkit.createInventory(this, 54, "Results | Page " + page);
 
             List<Material> finishedItems = new ArrayList<>();
 
-            for (Map.Entry entry : DataFile.getItemObject().entrySet()) {
-                if (((JsonPrimitive) entry.getValue()).getAsBoolean()) {
-                    finishedItems.add(Material.getMaterial(entry.getKey().toString()));
+            for (Map.Entry<String, JsonElement> entry : DataFile.getItemObject().entrySet()) {
+                if (entry.getValue().getAsBoolean()) {
+                    finishedItems.add(Material.getMaterial(entry.getKey()));
                 }
             }
 
@@ -67,7 +68,7 @@ public class StatsCommand implements CommandExecutor, Listener {
                 leftMeta.setDisplayName(ChatColor.RED + "Can't go left!");
             }
 
-            leftMeta.setLocalizedName(page + "");
+            leftMeta.getPersistentDataContainer().set(AllItems.pageKey, PersistentDataType.INTEGER, page);
             left.setItemMeta(leftMeta);
 
             ItemStack right;
@@ -112,8 +113,7 @@ public class StatsCommand implements CommandExecutor, Listener {
                 if (i >= 0 && i < items.size()) {
                     Object object = items.get(i);
 
-                    if (object instanceof Material) {
-                        Material material = (Material) object;
+                    if (object instanceof Material material) {
                         newObjectives.add(ItemBuilder.buildItem(new ItemStack(material),
                                 ChatColor.GRAY + "Item: " + ChatColor.BLUE +
                                         Format.formatItemName(material.name().replace("_", " ")),
@@ -136,12 +136,13 @@ public class StatsCommand implements CommandExecutor, Listener {
         }
     }
 
+    @SuppressWarnings("ConstantConditions") // Ignore the null check for page key, as item at slot 0 contains page
     @EventHandler(ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof GUI)) return;
         if (event.getCurrentItem() == null) return;
 
-        int page = Integer.parseInt(event.getInventory().getItem(0).getItemMeta().getLocalizedName());
+        int page = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(AllItems.pageKey, PersistentDataType.INTEGER);
 
         if (event.getRawSlot() == 0 && event.getCurrentItem().getType().equals(Material.LIME_STAINED_GLASS_PANE)) {
             new GUI((Player) event.getWhoClicked(), page - 1);

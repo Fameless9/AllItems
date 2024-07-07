@@ -1,5 +1,6 @@
 package net.fameless.allitems.command;
 
+import com.google.gson.JsonElement;
 import net.fameless.allitems.AllItems;
 import net.fameless.allitems.game.DataFile;
 import org.bukkit.Bukkit;
@@ -18,6 +19,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -39,14 +41,14 @@ public class PlayerStatsCommand implements CommandExecutor, Listener {
     }
 
     static class GUI implements InventoryHolder {
-        private Inventory gui;
+        private final Inventory gui;
         public GUI(Player player, int page) {
             gui = Bukkit.createInventory(this, 54, "Player Stats | Page " + page);
 
             List<UUID> playerList = new ArrayList<>();
 
-            for (Map.Entry entry : DataFile.getPlayerObject().entrySet()) {
-                playerList.add(UUID.fromString(entry.getKey().toString()));
+            for (Map.Entry<String, JsonElement> entry : DataFile.getPlayerObject().entrySet()) {
+                playerList.add(UUID.fromString(entry.getKey()));
             }
 
             ItemStack left;
@@ -61,7 +63,7 @@ public class PlayerStatsCommand implements CommandExecutor, Listener {
                 leftMeta.setDisplayName(ChatColor.RED + "Can't go left!");
             }
 
-            leftMeta.setLocalizedName(page + "");
+            leftMeta.getPersistentDataContainer().set(AllItems.pageKey, PersistentDataType.INTEGER, page);
             left.setItemMeta(leftMeta);
 
             ItemStack right;
@@ -131,12 +133,14 @@ public class PlayerStatsCommand implements CommandExecutor, Listener {
         }
     }
 
+    @SuppressWarnings("ConstantConditions") // Ignore the null check for page key, as item at slot 0 contains page
     @EventHandler(ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getInventory().getHolder() instanceof GUI)) return;
         if (event.getCurrentItem() == null) return;
 
-        int page = Integer.parseInt(event.getInventory().getItem(0).getItemMeta().getLocalizedName());
+        int page = event.getInventory().getItem(0).getItemMeta().getPersistentDataContainer()
+                .get(AllItems.pageKey, PersistentDataType.INTEGER);
 
         if (event.getRawSlot() == 0 && event.getCurrentItem().getType().equals(Material.LIME_STAINED_GLASS_PANE)) {
             new GUI((Player) event.getWhoClicked(), page - 1);

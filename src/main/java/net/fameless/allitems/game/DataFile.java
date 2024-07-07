@@ -135,9 +135,8 @@ public class DataFile {
     }
 
     public static JsonObject getRootObject() {
-        JsonParser parser = new JsonParser();
         try {
-            return parser.parse(new FileReader(jsonFile)).getAsJsonObject();
+            return JsonParser.parseReader(new FileReader(jsonFile)).getAsJsonObject();
         } catch (FileNotFoundException e) {
             Bukkit.getLogger().severe("Failed to read file. Shutting down.");
             Bukkit.getPluginManager().disablePlugin(AllItems.getInstance());
