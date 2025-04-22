@@ -1,5 +1,5 @@
 # Outdated
-A newer version of this plugin ist available [Here](https://github.com/Fameless9/ForceBattle)
+A newer version of this plugin ist available [Here](https://github.com/Fameless9/AllItemsPlus)
 
 # All Items Plugin
 
