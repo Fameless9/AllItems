@@ -1,3 +1,6 @@
+# Outdated
+A newer version of this plugin ist available [Here](https://github.com/Fameless9/ForceBattle)
+
 # All Items Plugin
 
 This is a small plugin for players who really want to spend a lot of time grinding, or just content creators who want to make a series out of this game mode.
